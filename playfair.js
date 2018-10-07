@@ -67,8 +67,8 @@ function englishnessScore(str) {
 }
 
 //keys generated one-by-one to allow concurrent implementations
-function generatePossibleKey() {
-
+function generatePossibleKey(i) {
+  return ALL_WORDS[i];
 }
 
 //TODO: reuse this to allow non-word keys - probably very slow
@@ -180,3 +180,4 @@ function solveCipher(cipherText,keyMatrix) {
 }
 
 let cipherText = "ME IK QO TX CQ TE ZX CO MW QC TE HN FB IK ME HA KR QC UN GI KM AV";
+console.log(bruteForceCipher(cipherText)[1]);
