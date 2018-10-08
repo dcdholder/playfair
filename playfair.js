@@ -1,10 +1,7 @@
-//movie uses J substitution and left/up row/column decipher directions
+//movie uses J substitution
 
-//let KNOWN_KEY_LENGTH  = 5;
 let MATRIX_SIZE       = 5;
 let UPPERCASE_LETTERS = String.fromCharCode(...Array(91).keys()).slice(65).split('');
-let ALL_WORDS         = require('./words.json');
-ALL_WORDS         = ['DEATH'];
 
 let OMITTED_LETTER           = 'J';
 let SUBSTITUTE_LETTER        = 'I';
@@ -56,7 +53,7 @@ function createKeyMatrix(rawKey) {
   return keyMatrix;
 }
 
-function solveCipher(cipherText,rawKey) {
+function solveCipher(cipherText,rawKey,isEncryption) {
   let keyMatrix                   = createKeyMatrix(rawKey);
   let cipherChars                 = cipherText.split(" ").join('').split('');
   let cipherCharsPairs            = [];
@@ -64,7 +61,11 @@ function solveCipher(cipherText,rawKey) {
 
   //split ciphertext into character pairs
   for (let i=0;i<cipherChars.length;i+=2) {
-    cipherCharsPairs.push([cipherChars[i],cipherChars[i+1]]);
+    if (isEncryption && cipherChars[i]==cipherChars[i+1]) {
+      cipherCharsPairs.push([cipherChars[i],DOUBLE_LETTER_SUBSTITUTE]);
+    } else {
+      cipherCharsPairs.push([cipherChars[i],cipherChars[i+1]]);
+    }
     cipherCharsPairsCoordinates.push([new Array(2),new Array(2)]);
   }
 
@@ -99,34 +100,38 @@ function solveCipher(cipherText,rawKey) {
     let yA, yB;
 
     if (xAInitial==xBInitial) { //check for columns
+      let increment = isEncryption ? 1 : -1;
+
       xA = xAInitial;
       xB = xBInitial;
 
-      yA = yAInitial - 1;
-      yB = yBInitial - 1;
+      yA = yAInitial + increment;
+      yB = yBInitial + increment;
 
       //wrap around if either final y coordinate is off the grid
-      if (yA==-1) {
-        yA = keyMatrix.length-1;
-      }
-
-      if (yB==-1) {
-        yB = keyMatrix.length-1;
+      if (isEncryption) {
+        if (yA==keyMatrix.length) {yA = 0;}
+        if (yB==keyMatrix.length) {yB = 0;}
+      } else {
+        if (yA==-1) {yA = keyMatrix.length-1;}
+        if (yB==-1) {yB = keyMatrix.length-1;}
       }
     } else if (yAInitial==yBInitial) { //check for rows
-      xA = xAInitial - 1;
-      xB = xBInitial - 1;
+      let increment = isEncryption ? 1 : -1;
+
+      xA = xAInitial + increment;
+      xB = xBInitial + increment;
 
       yA = yAInitial;
       yB = yBInitial;
 
       //wrap around if either final x coordinate is off the grid
-      if (xA==-1) {
-        xA = keyMatrix.length-1;
-      }
-
-      if (xB==-1) {
-        xB = keyMatrix.length-1;
+      if (isEncryption) {
+        if (xA==keyMatrix.length) {xA = 0;}
+        if (xB==keyMatrix.length) {xB = 0;}
+      } else {
+        if (xA==-1) {xA=keyMatrix.length-1;}
+        if (xB==-1) {xB=keyMatrix.length-1;}
       }
     } else { //otherwise, we have a rectangle
       xA = xBInitial; //switch x coordinates
@@ -144,7 +149,9 @@ function solveCipher(cipherText,rawKey) {
   return outputChars.join('');
 }
 
-//TODO: add encryption capability
 let rawKey     = "DEATH";
 let cipherText = "ME IK QO TX CQ TE ZX CO MW QC TE HN FB IK ME HA KR QC UN GI KM AV";
-console.log(solveCipher(cipherText,rawKey));
+let outputText = "LABOULAYELADYWILLXLEADTOCIBOLATEMPLESOFGOLDX";
+
+console.log(solveCipher(cipherText,rawKey,false));
+console.log(solveCipher(outputText,rawKey,true));
